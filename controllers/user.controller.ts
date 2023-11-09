@@ -7,6 +7,8 @@ require('dotenv').config();
 import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
+import { sendToken } from "../utils/jwt";
+import { redis } from "../utils/redis";
 
 
 //Register user
@@ -120,3 +122,62 @@ export const activateUser = catchAsyncError(async (req: Request, res: Response, 
     }
 })
 
+
+//Login user
+
+interface ILoginRequest{
+    email: string;
+    password: string;
+}
+
+export const loginUser = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {email, password} = req.body as ILoginRequest;
+
+        if(!email || !password){
+            return next(new ErrorHandler("Please enter email and password", 400));
+        };
+        const user = await userModel.findOne({email}).select("+password");
+
+        if(!user){
+            return next(new ErrorHandler("Invalid email or password", 400));
+        };
+
+        const isPasswordMatch = await user.comparePassword(password);
+        if(!isPasswordMatch){
+            return next(new ErrorHandler("Invalid email or password", 400));
+        };
+
+        sendToken(user, 200, res)
+
+
+    } catch (error:any) {
+        return next(new ErrorHandler(error.message, 400));
+        
+    }
+})
+
+
+interface IAuthenticatedRequest extends Request {
+    user?: IUser;
+}
+
+//logout user
+export const logoutUser = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        res.cookie("access_token", "", {maxAge: 1});
+        res.cookie("refresh_token", "", {maxAge: 1});
+
+        const reqWithUser = req as IAuthenticatedRequest;
+        const userId = reqWithUser.user?._id; 
+        redis.del(userId);
+        res.status(200).json({
+            success: true,
+            message: "Logged out successfully" 
+        })
+        
+    } catch (error:any) {
+        return next(new ErrorHandler(error.message, 400));
+    }
+})
