@@ -300,9 +300,9 @@ step 13 : create a models folder > user.model.ts to write schema
                 return await bcrypt.compare(enteredPassword, this.password);
             }
 
-            const userModel: Model<IUser> = mongoose.model<IUser>("User", userSchema);
+            const UserModel: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 
-            export default userModel;
+            export default UserModel;
 
             ------------------------------------------------------------------
     

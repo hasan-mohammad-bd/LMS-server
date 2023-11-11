@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction} from "express";
-import userModel, {IUser} from "../models/user.model";
+import UserModel, {IUser} from "../models/user.model";
 import ErrorHandler from "../utils/ErrorHandler";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import { catchAsyncError } from "../middleware/catchAsyncError";
@@ -10,6 +10,7 @@ import sendMail from "../utils/sendMail";
 import { accessTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt";
 import { redis } from "../utils/redis";
 import { getUserById } from "../services/user.service";
+import cloudinary from "cloudinary";
 
 
 //Register user
@@ -24,7 +25,7 @@ interface IRegistrationBody {
 export const registrationUser = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {name, email, password} = req.body;
-        const isEmailExist = await userModel.findOne({email});
+        const isEmailExist = await UserModel.findOne({email});
         if(isEmailExist){
             return next(new ErrorHandler("Email already exist", 400))
         }
@@ -101,13 +102,13 @@ export const activateUser = catchAsyncError(async (req: Request, res: Response, 
         }
 
         const {name, email, password} = newUser.user;
-        const existUser = await userModel.findOne({email});
+        const existUser = await UserModel.findOne({email});
 
         if(existUser){
             return next(new ErrorHandler("User already exist", 400))
         }
 
-        const user = await userModel.create({
+        const user = await UserModel.create({
             name,
             email,
             password
@@ -138,7 +139,7 @@ export const loginUser = catchAsyncError(async (req: Request, res: Response, nex
         if(!email || !password){
             return next(new ErrorHandler("Please enter email and password", 400));
         };
-        const user = await userModel.findOne({email}).select("+password");
+        const user = await UserModel.findOne({email}).select("+password");
 
         if(!user){
             return next(new ErrorHandler("Invalid email or password", 400));
@@ -241,14 +242,14 @@ interface ISocialAuthBody{
 export const socialAuth = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
     try {
         const {email, name, avatar} = req.body as ISocialAuthBody;
-        const user = await userModel.findOne({email});
+        const user = await UserModel.findOne({email});
         //change the user idVerified to true
 /*         if(user){
             user.isVerified = true;
             await user.save();
         } */
         if(!user){
-            const newUser = await userModel.create({email, name, avatar});
+            const newUser = await UserModel.create({email, name, avatar});
 /*             newUser.isVerified = true;
             await newUser.save(); */
             sendToken(newUser, 200, res);
@@ -273,10 +274,10 @@ export const updateUserInfo = catchAsyncError(async (req: Request, res: Response
  try {
     const {name, email} = req.body as IUpdateUserInfo
     const userId = req.user?._id;
-    const user = await userModel.findById(userId);
+    const user = await UserModel.findById(userId);
 
     if(email && user){
-        const isEmailExist = await userModel.findOne({email});
+        const isEmailExist = await UserModel.findOne({email});
         if(isEmailExist){
             return next(new ErrorHandler("Email already exists", 400));
         }
@@ -315,7 +316,7 @@ export const updatePassword = catchAsyncError(async (req: Request, res: Response
         if(!oldPassword || !newPassword){
             return next(new ErrorHandler("Please enter old and new password", 400));
         }
-        const user = await userModel.findById(req.user?._id).select("+password");
+        const user = await UserModel.findById(req.user?._id).select("+password");
 
         if(user?.password === undefined ){
             return next(new ErrorHandler("Invalid User", 400));
@@ -334,6 +335,51 @@ export const updatePassword = catchAsyncError(async (req: Request, res: Response
             user
         })
 
+
+    } catch (error :any) {
+        return next(new ErrorHandler(error.message, 400));
+        
+    }
+})
+
+//Update profile picture 
+
+interface IUpdateProfilePicture {
+    avatar: string;
+}
+export const updateProfilePicture = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {avatar} = req.body; 
+        const userId = req.user?._id;
+        const user = await UserModel.findById(userId);
+
+        if(avatar && user){
+            //if public_id is present, means that the user has already uploaded a profile picture and we need to delete it before uploading a new one
+            if(user?.avatar?.public_id){
+                await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
+
+                const myCloud = await cloudinary.v2.uploader.upload(avatar, {folder: "avatars", width: 150});
+                user.avatar = {
+                    public_id: myCloud.public_id,
+                    url: myCloud.secure_url
+                }
+            }  
+                        
+            else {
+             const myCloud = await cloudinary.v2.uploader.upload(avatar, {folder: "avatars", width: 150});
+             user.avatar = {
+                 public_id: myCloud.public_id,
+                 url: myCloud.secure_url
+             }
+            }
+        }
+
+        await user?.save();
+        await redis.set(userId, JSON.stringify(user));
+        res.status(200).json({
+            success: true,
+            user
+        })
 
     } catch (error :any) {
         return next(new ErrorHandler(error.message, 400));
