@@ -23,7 +23,7 @@ interface ICourseData extends Document {
     title: string;
     description: string;
     videoUrl: string;
-    videoThumbnail: object;
+    // videoThumbnail?: object;
     videoSection: string;
     videoLength: number;
     videoPlayer: string;
@@ -38,16 +38,16 @@ interface ICourse extends Document{
     description: string;
     price: number;
     estimatedPrice?: number;
-    thumbnail: object;
+    thumbnail?: {public_id: string, url: string};
     tags: string;
     level: string;
     demoUrl: string;
-    benefit: {title: string, description: string}[];
-    reviews: IReview[];
+    benefits: {title: string}[];
+    reviews?: IReview[];
     courseData: ICourseData[];
-    rating?: number;
-    purchased?: boolean;
-    prerequisites?: object[];
+    ratings?: number;
+    purchased?: { default: number, type: number };
+    prerequisites?: { title: string }[];
 
 
 }
@@ -75,7 +75,7 @@ const commentSchema = new Schema<IComment>({
 
 const courseDataSchema = new Schema<ICourseData>({
     videoUrl : String,
-    videoThumbnail: Object,
+    // videoThumbnail: Object,
     title: String,
     videoSection: String,
     description: String,
@@ -88,16 +88,18 @@ const courseDataSchema = new Schema<ICourseData>({
 
 const courseSchema = new Schema<ICourse>({
     name: {
+
+
         type: String,
-        required: true
+        required: true,
     },
     description: {
         type: String,
-        required: true
+        required: true,
     },
     price: {
         type: Number,
-        required: true
+        required: true,
     },
     estimatedPrice: {
         type: Number,
@@ -105,30 +107,30 @@ const courseSchema = new Schema<ICourse>({
     thumbnail:{
         public_id:{
             type: String,
-            required: true
+            // required: true
         },
         url:{
             type: String,
-            required: true
+            // required: true
         }
     },
     tags: {
         type: String,
-        required: true
+        required: true,
     },
     level: {
         type: String,
-        required: true
+        required: true,
     },
     demoUrl: {
         type: String,
-        required: true
+        required: true,
     },
-    benefit: [{title: String}],
+    benefits: [{title: String}],
     prerequisites: [{title: String}],
     reviews: [reviewSchema],
     courseData: [courseDataSchema],
-    rating: {
+    ratings: {
         default: 0,
         type: Number
     },
