@@ -5,7 +5,8 @@
   "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsnd --respawn --files server.ts"
+    "dev": "tsnd --respawn --files server.ts",
+    "git": "git add . && git commit -m 'update' && git push"
   },
   "author": "Hasan Mohammad",
   "license": "ISC",
