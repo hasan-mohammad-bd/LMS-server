@@ -30,6 +30,7 @@ export const isAuthenticated = catchAsyncError(
       return next(new ErrorHandler("User not found", 400));
     }
 
+    //setting user in req to get access to req.user for next middleware
     req.user = JSON.parse(user);
 
     next();
