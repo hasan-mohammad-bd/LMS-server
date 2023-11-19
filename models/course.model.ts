@@ -4,13 +4,13 @@ import { IUser } from "./user.model";
 interface IComment {
   user: IUser;
   question: string;
-  questionReplies?: IComment[];
+  questionReplies?: object[];
 }
 interface IReview extends Document {
-  user: object;
-  course: string;
+  user: IUser | undefined;
   rating: number;
   comment: IComment[];
+  commentReplies?: object[];
 }
 
 interface ILink extends Document {
@@ -55,6 +55,7 @@ const reviewSchema = new Schema<IReview>({
     default: 0,
   },
   comment: String,
+  commentReplies: [Object], 
 });
 
 const linkSchema = new Schema<ILink>({
