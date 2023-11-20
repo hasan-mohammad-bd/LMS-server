@@ -295,7 +295,6 @@ export const addAnswer = catchAsyncError(
 // add review in the course 
 interface IAddReviewData {
   review: string;
-  courseId: string;
   rating: number;
   userId: string;
 
@@ -328,8 +327,28 @@ export const addReview = catchAsyncError(async (req: Request, res: Response, nex
     }
 
     course?.reviews?.push(reviewData);
-    
+     
+    let avg = 0;
 
+    course?.reviews?.forEach((rev:any)=> {
+      avg += rev.rating; 
+    })
+
+    if(course && course.reviews){
+      course.ratings = avg % course.reviews.length // example 2 review (5 + 3) / 2 = 4 ratings
+    }
+
+    await course?.save()
+
+      const notification = {
+        title : "New Review",
+        message: `${req.user?.name} has added a review on your course ${course?.name}`,
+      }
+
+      res.status(200).json({
+        success: true,
+        course
+      })
 
   } catch (error: any) {
     return next(new ErrorHandler(error.message, 500));
