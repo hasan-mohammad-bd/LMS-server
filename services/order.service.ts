@@ -11,3 +11,13 @@ export const newOrder = catchAsyncError(async(data:any, res:Response, next:NextF
         message: "Order created successfully",
     });
 })
+
+//get all orders --- for admin
+
+export const getAllOrdersService = async (res: Response) => {
+    const orders = await OrderModel.find().sort({createdAt: -1});
+    res.status(201).json({
+        success: true,
+        orders
+    })
+  }

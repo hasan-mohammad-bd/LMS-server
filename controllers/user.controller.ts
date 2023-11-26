@@ -9,7 +9,7 @@ import path from "path";
 import sendMail from "../utils/sendMail";
 import { accessTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt";
 import { redis } from "../utils/redis";
-import { getUserById } from "../services/user.service";
+import { getAllUsersService, getUserById } from "../services/user.service";
 import cloudinary from "cloudinary";
 
 
@@ -383,6 +383,17 @@ export const updateProfilePicture = catchAsyncError(async (req: Request, res: Re
 
     } catch (error :any) {
         return next(new ErrorHandler(error.message, 400));
+        
+    }
+})
+
+//get all users - only for admin
+
+export const getAllUsers = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        getAllUsersService(res)
+    } catch (error : any) {
+        return next(new ErrorHandler(error.message, 500));
         
     }
 })
