@@ -9,7 +9,7 @@ import path from "path";
 import sendMail from "../utils/sendMail";
 import { accessTokenOptions, refreshTokenOptions, sendToken } from "../utils/jwt";
 import { redis } from "../utils/redis";
-import { getAllUsersService, getUserById } from "../services/user.service";
+import { getAllUsersService, getUserById, updateUserRoleService } from "../services/user.service";
 import cloudinary from "cloudinary";
 
 
@@ -393,6 +393,43 @@ export const getAllUsers = catchAsyncError(async (req: Request, res: Response, n
     try {
         getAllUsersService(res)
     } catch (error : any) {
+        return next(new ErrorHandler(error.message, 500));
+        
+    }
+})
+
+
+// update user role 
+export const updateUserRole = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {id, role} = req.body;
+        updateUserRoleService(res, id, role);
+    } catch (error :any) {
+        return next(new ErrorHandler(error.message, 500));
+        
+    }
+})
+
+//delete user -- only for admin 
+
+export const deleteUser = catchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {id} = req.params;
+        const user = await UserModel.findById(id);
+
+        if(!user){
+            return next(new ErrorHandler("User not found", 404));
+        }
+
+        await user.deleteOne({id});
+
+        await redis.del(id);
+
+        res.status(200).json({
+            success: true,
+            message: "User deleted successfully"
+        })
+    } catch (error :any) {
         return next(new ErrorHandler(error.message, 500));
         
     }
