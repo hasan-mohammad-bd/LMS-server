@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Order Confirmation</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        header {
+            background: #3498db;
+            color: #fff;
+            padding: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        section {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h2 {
+            color: #3498db;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        footer {
+            margin-top: 20px;
+            padding: 10px;
+            background: #3498db;
+            color: #fff;
+        }
+
+        footer p {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Course Order Confirmation</h1>
+    </header>
+
+    <section>
+        <h2>Order Details</h2>
+        <table>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Course Name</th>
+                <th>Price</th>
+            </tr>
+            <tr>
+                <td><%= order._id %></td>
+                <td><%= order.date %></td>
+                <td><%= order.name %></td>
+                <td><%= order.price %></td>
+            </tr>
+        </table>
+    </section>
+
+    <section>
+        <h2>Thank You for Your Purchase!</h2>
+        <p>Your course order has been successfully processed. You will receive further instructions via email.</p>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 E learning. All rights reserved.</p>
+    </footer>
+</body>
+</html>

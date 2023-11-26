@@ -44,7 +44,7 @@ interface ICourse extends Document {
   reviews?: IReview[];
   courseData: ICourseData[];
   ratings?: number;
-  purchased?: { default: number; type: number };
+  purchased?: number;
   prerequisites?: { title: string }[];
 }
 

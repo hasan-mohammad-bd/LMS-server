@@ -9,6 +9,7 @@ import mongoose from "mongoose";
 import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
+import NotificationModel from "../models/notification.model";
 
 // upload course
 export const uploadCourse = catchAsyncError(
@@ -194,6 +195,12 @@ export const addQuestion = catchAsyncError(
       //add this question to our course content
       courseContent.questions.push(newQuestion);
 
+      await NotificationModel.create({
+        userId: req.user?._id,
+        title: "New Question Received",
+        message: `New question added in ${courseContent?.title}`,
+      })
+
       //save the course
       await course?.save();
 
@@ -255,6 +262,13 @@ export const addAnswer = catchAsyncError(
 
       if (req?.user?._id === question?.user?._id) {
         // create notification
+
+        await NotificationModel.create({
+          userId: req.user?._id,
+          title: "New Question Reply Received",
+          message: `New question reply added in ${courseContent?.title}`,
+        })
+        
       } else {
         const data = {
           name: question.user.name,
